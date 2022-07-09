@@ -15,7 +15,10 @@ html(lang="ko")
             div#room
                 h3
                 ul
-                form
+                form#name
+                    input(type="text", placeholder="닉네임을 입력해주세요.", required)
+                    button 닉네임 지정
+                form#msg
                     input(type="text", placeholder="채팅 메세지를 입력해주세요.", required)
                     button 전송
     script(src="/socket.io/socket.io.js")

@@ -26,22 +26,28 @@ const socketIoServer = SocketIO(httpServer);
 socketIoServer.on("connection", (socketIo) => {
     console.log("Connection maded");
 
+    socketIo.nickname = "익명";
+
+    socketIo.on("nickname", (user_nickname) => {
+        socketIo.nickname = user_nickname;
+    });
+
     socketIo.on("enter_room", (roomName, done) => {
         console.group(`[enter_room] ${roomName}`);
         done();
         socketIo.join(roomName);  // 현재 socket.io 연결을 roomName 방에 입장
         // 현재의 rootName에 새로운 연결이 맺어졌음에 대한 이벤트 발생
-        socketIo.to(roomName).emit("welcome");
+        socketIo.to(roomName).emit("welcome", socketIo.nickname);
     });
 
     socketIo.on("disconnecting", () => {
         socketIo.rooms.forEach((room) => {
-            socketIo.to(room).emit("bye");
+            socketIo.to(room).emit("bye", socketIo.nickname);
         });
     });
 
     socketIo.on("new_message", (message, roomName, done) => {
-        socketIo.to(roomName).emit("new_message", message);
+        socketIo.to(roomName).emit("new_message", `${socketIo.nickname}: ${message}`);
         done();
     });
 });
