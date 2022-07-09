@@ -8,5 +8,13 @@ html(lang="ko")
         header
             h1 Noom
         main
+            div#faceStream
+                div
+                    input#audio_toggle(type="checkbox", checked)
+                    div 사운드
+                    input#video_toggle(type="checkbox", checked)
+                    div 비디오
+                    select#camera_devices
+                video#myFace(width="400", height="400", autoplay, playsinline)
     script(src="/socket.io/socket.io.js")
     script(src="/public/js/app.js")
