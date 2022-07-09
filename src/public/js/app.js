@@ -1,15 +1,44 @@
 const socketIo = io();
 
-socketIo.on("welcome", (new_user_nickname) => {
+socketIo.on("welcome", (new_user_nickname, roomSize) => {
     appendMessageToUI(`${new_user_nickname}님이 들어오셨습니다.`);
+    document.querySelector("#room h3").innerText = `Room ${roomName} (${roomSize})`;
 });
 
-socketIo.on("bye", (left_user_nickname) => {
+socketIo.on("bye", (left_user_nickname, roomSize) => {
     appendMessageToUI(`${left_user_nickname}님이 나갔습니다. :-(`);
+    document.querySelector("#room h3").innerText = `Room ${roomName} (${roomSize})`;
 });
 
 socketIo.on("new_message", (message) => {
     appendMessageToUI(message);
+});
+
+socketIo.on("room_change", (publicRoomNames) => {
+    console.log("publicRoomNames :", publicRoomNames);
+    const parent = document.querySelector("#welcome .public_rooms");
+    // parent.innerHTML = JSON.stringify(publicRoomNames);
+    // publicRoomNames.forEach((roomName) => {
+    //     const li = document.createElement("li");
+    //     li.innerText = roomName;
+    //     parent.append(li);
+    // });
+
+    // const tag_list = [];
+    // publicRoomNames.forEach(roomName => {
+    //     const tag = `<li>${roomName}</li>`;
+    //     tag_list.push(tag)
+    // });
+    // const html = tag_list.join('');
+    // parent.innerHTML = html;
+
+    // parent.innerHTML = publicRoomNames.map(roomName => {
+    //     return `<li>${roomName}</li>`;
+    // }).join("");
+
+    parent.innerHTML = publicRoomNames.map(roomName => {
+        return `<li>${roomName}</li>`;
+    }).join("");
 });
 
 
