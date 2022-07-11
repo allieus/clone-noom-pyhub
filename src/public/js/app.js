@@ -1,7 +1,38 @@
 const socketIo = io();
 
+// websocket
+
+socketIo.on("welcome", async () => {
+    const offer = await myPeerConnection.createOffer();
+    myPeerConnection.setLocalDescription(offer);
+    socketIo.emit("offer", offer, "public_room");
+    console.log("offer :", offer);
+});
+
+socketIo.on("offer", async (offer) => {
+    console.log("received the offer");
+    myPeerConnection.setRemoteDescription(offer);
+    const answer = await myPeerConnection.createAnswer();
+    myPeerConnection.setLocalDescription(answer);
+    socketIo.emit("answer", answer, "public_room");
+    console.log("sent the answer");
+});
+
+socketIo.on("answer", (answer) => {
+    console.log("received the answer");
+    myPeerConnection.setRemoteDescription(answer);
+});
+
+socketIo.on("ice", (candidate) => {
+    console.log("received candidate", candidate);
+    myPeerConnection.addIceCandidate(candidate);
+});
+
+// ui
+
 const faceVideo = document.querySelector("#myFace");
 let videoStream;
+let myPeerConnection;
 
 document.querySelector("#camera_devices").addEventListener("input", async function() {
     const deviceId = this.value;
@@ -76,4 +107,27 @@ async function getMedia(desiredDeviceId) {
     }
 }
 
-getMedia();
+async function init() {
+    await getMedia();
+    // 책에서는 makeConnection 이라는 함수를 호출
+    myPeerConnection = new RTCPeerConnection();
+    myPeerConnection.addEventListener("icecandidate", (event) => {
+        console.log("got ice candidate");
+        socketIo.emit("ice", event.candidate, "public_room");
+    });
+    myPeerConnection.addEventListener("addstream", (event) => {
+        console.log("got a stream from peer");
+        console.log("Peer's Stream :", event.stream);
+        console.log("My Stream :", videoStream);
+
+        document.querySelector("#peerFace").srcObject = event.stream;
+    });
+
+    videoStream.getTracks()
+        .forEach(track => myPeerConnection.addTrack(track, videoStream));
+
+    socketIo.emit("join_room", "public_room", async () => {
+    });
+}
+
+init();

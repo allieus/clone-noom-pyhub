@@ -23,6 +23,23 @@ app.get("/*", (req, res) => {
 const httpServer = http.createServer(app);
 const socketIoServer = SocketIO(httpServer);
 
+socketIoServer.on("connection", (socketIo) => {
+    socketIo.on("join_room", (roomName, done) => {
+        socketIo.join(roomName);
+        done();
+        socketIo.to(roomName).emit("welcome");
+    });
+    socketIo.on("offer", (offer, roomName) => {
+        socketIo.to(roomName).emit("offer", offer);
+    });
+    socketIo.on("answer", (answer, roomName) => {
+        socketIo.to(roomName).emit("answer", answer);
+    });
+    socketIo.on("ice", (candidate, roomName) => {
+        socketIo.to(roomName).emit("ice", candidate);
+    });
+});
+
 httpServer.listen(3000, () => {
     console.log('Listening on http://localhost:3000')
 });
