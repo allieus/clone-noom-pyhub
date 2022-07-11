@@ -40,6 +40,7 @@ document.querySelector("#camera_devices").addEventListener("input", async functi
 });
 
 document.querySelector("#audio_toggle").addEventListener("click", function(event) {
+    const isEnabled = this.checked;
     if(videoStream) {
         const tracks = videoStream.getAudioTracks();
         tracks.forEach(track => {
@@ -116,7 +117,19 @@ async function init() {
     }
     else {
         // 책에서는 makeConnection 이라는 함수를 호출
-        myPeerConnection = new RTCPeerConnection();
+        myPeerConnection = new RTCPeerConnection({
+            iceServers: [
+                {
+                    urls: [
+                        "stun:stun.l.google.com:19302",
+                        "stun:stun1.l.google.com:19302",
+                        "stun:stun2.l.google.com:19302",
+                        "stun:stun3.l.google.com:19302",
+                        "stun:stun4.l.google.com:19302",
+                    ]
+                }
+            ]
+        });
         myPeerConnection.addEventListener("icecandidate", (event) => {
             console.log("got ice candidate");
             socketIo.emit("ice", event.candidate, "public_room");
