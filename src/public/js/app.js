@@ -94,10 +94,9 @@ async function getMedia(desiredDeviceId) {
             },
         };
     }
-
+``
     try {
         videoStream = await navigator.mediaDevices.getUserMedia(config);
-        console.log(videoStream);
         faceVideo.srcObject = videoStream;
 
         await getCameraDevices();
@@ -109,25 +108,33 @@ async function getMedia(desiredDeviceId) {
 
 async function init() {
     await getMedia();
-    // 책에서는 makeConnection 이라는 함수를 호출
-    myPeerConnection = new RTCPeerConnection();
-    myPeerConnection.addEventListener("icecandidate", (event) => {
-        console.log("got ice candidate");
-        socketIo.emit("ice", event.candidate, "public_room");
-    });
-    myPeerConnection.addEventListener("addstream", (event) => {
-        console.log("got a stream from peer");
-        console.log("Peer's Stream :", event.stream);
-        console.log("My Stream :", videoStream);
 
-        document.querySelector("#peerFace").srcObject = event.stream;
-    });
+    if(!videoStream) {
+        console.warn("videoStream is not defined.");
+        document.querySelector("#messages").innerHTML = "videoStream is not defined.";
+        document.querySelector("#faceStream").hidden = true;
+    }
+    else {
+        // 책에서는 makeConnection 이라는 함수를 호출
+        myPeerConnection = new RTCPeerConnection();
+        myPeerConnection.addEventListener("icecandidate", (event) => {
+            console.log("got ice candidate");
+            socketIo.emit("ice", event.candidate, "public_room");
+        });
+        myPeerConnection.addEventListener("addstream", (event) => {
+            console.log("got a stream from peer");
+            console.log("Peer's Stream :", event.stream);
+            console.log("My Stream :", videoStream);
 
-    videoStream.getTracks()
-        .forEach(track => myPeerConnection.addTrack(track, videoStream));
+            document.querySelector("#peerFace").srcObject = event.stream;
+        });
 
-    socketIo.emit("join_room", "public_room", async () => {
-    });
+        videoStream.getTracks()
+            .forEach(track => myPeerConnection.addTrack(track, videoStream));
+
+        socketIo.emit("join_room", "public_room", async () => {
+        });
+    }
 }
 
 init();
